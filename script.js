@@ -270,120 +270,121 @@ document.getElementById('showMaxTemp').addEventListener('click', () => {
 
 
 
-// Chatbot logic for both weather and general queries
-async function handleChat(query) {
-    try {
-        const isWeatherQuery = query.toLowerCase().includes('weather');
 
-        if (isWeatherQuery) {
-            const city = extractCityName(query);
-            if (city) {
-                displayChatMessage('Bot', `Fetching weather information for ${city}...`);
-                await fetchAndDisplayWeather(city);  // Fetch and display weather data
-            } else {
-                displayChatMessage('Bot', 'Please provide a valid city name for weather information.');
-            }
-        } else {
-            await fetchGeminiResponse(query);  // Handle general queries using Gemini API
+(async function () {
+    const { GoogleGenerativeAI } = await import('https://esm.run/@google/generative-ai');
+
+
+    const genAI = new GoogleGenerativeAI(geminiApiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Function to detect if the query is weather-related and extract the city name using AI
+    async function detectWeatherQueryWithAI(query) {
+        const weatherKeywords = ["weather", "forecast", "temperature"];
+        const containsWeatherKeyword = weatherKeywords.some(keyword => query.toLowerCase().includes(keyword));
+
+        if (!containsWeatherKeyword) return { isWeatherQuery: false, city: null };
+
+        // Ask the AI to extract the city name from the query
+        const prompt = `Extract the city name from the following query: "${query}". 
+                        If no city is mentioned, reply with "None".`;
+
+        try {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const city = response.text().trim();
+
+            return city !== "None" ? { isWeatherQuery: true, city } : { isWeatherQuery: true, city: null };
+        } catch (error) {
+            console.error("AI City Detection Error:", error);
+            return { isWeatherQuery: true, city: null };
         }
-    } catch (error) {
-        console.error(error);
-        displayChatMessage('Bot', 'Oops! Something went wrong. Please try again.');
     }
-}
 
-// Fetch weather data and display it in the chat
-async function fetchAndDisplayWeather(city) {
-    try {
-        const response = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+    // Function to fetch weather data from OpenWeather API
+    async function fetchWeatherData(city) {
+        try {
+            const response = await fetch(
+                `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+            );
+            if (!response.ok) throw new Error('City not found');
+            const data = await response.json();
+            return `
+                Weather in ${data.name}:
+                - Temperature: ${data.main.temp}°C
+                - Description: ${data.weather[0].description}
+                - Humidity: ${data.main.humidity}%
+                - Wind Speed: ${data.wind.speed} m/s
+            `;
+        } catch (error) {
+            console.error("Weather API Error:", error);
+            return "Sorry, I couldn't fetch the weather data 😔";
+        }
+    }
+
+    // Function to generate a response using Gemini API for non-weather queries
+    async function getBotResponse(query) {
+        try {
+            const result = await model.generateContent(query);
+            const response = await result.response;
+            return response.text(); // Return the generated text
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            return "toba toba 👀";
+        }
+    }
+
+    // Main handler for chat input
+    async function handleChat(query) {
+        displayChatMessage('👉', query); // Display user query
+
+        const { isWeatherQuery, city } = await detectWeatherQueryWithAI(query);
+
+        let botResponse;
+        if (isWeatherQuery && city) {
+            botResponse = await fetchWeatherData(city); // Fetch weather if city is detected
+        } else if (isWeatherQuery) {
+            botResponse = "Please specify a valid city name 🙄";
+        } else {
+            botResponse = await getBotResponse(query); // Use Gemini API for other queries
+        }
+
+        displayChatMessage('👽', botResponse); // Display the bot's response
+    }
+
+    // Event listener for chat input (Button Click)
+    document.getElementById('sendChat').addEventListener('click', async () => {
+        const chatInput = document.getElementById('chatInput');
+        const query = chatInput.value.trim();
+
+        if (query) {
+            await handleChat(query); // Handle the query
+            chatInput.value = ''; // Clear input field
+        }
+    });
+
+    // Event listener for sending messages with the Enter key
+    document.getElementById('chatInput').addEventListener('keydown', async (event) => {
+        if (event.key === 'Enter') {
+            document.getElementById('sendChat').click(); // Trigger button click
+        }
+    });
+
+    // Function to display chat messages
+    function displayChatMessage(sender, message) {
+        const chatContainer = document.getElementById('chatContainer');
+        const messageElem = document.createElement('div');
+
+        messageElem.classList.add(
+            'p-2', 'mb-2', 'rounded-lg',
+            sender === '👽' ? 'bg-green-100' : 'bg-white'
         );
 
-        if (!response.ok) throw new Error('Weather data not found');
-        const data = await response.json();
-
-        // Format weather data as a message
-        const message = `
-            Weather in ${data.name}:
-            - Temperature: ${data.main.temp}°C
-            - Description: ${data.weather[0].description}
-            - Humidity: ${data.main.humidity}%
-            - Wind Speed: ${data.wind.speed} m/s
-        `;
-        displayChatMessage('Bot', message);
-    } catch (error) {
-        console.error(error);
-        displayChatMessage('Bot', 'Sorry, I couldn\'t fetch the weather data.');
+        messageElem.textContent = `${sender}: ${message}`;
+        chatContainer.appendChild(messageElem);
+        chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll to latest message
     }
-}
-
-// Fetch response from Gemini API for general queries
-async function fetchGeminiResponse(query) {
-    try {
-        const response = await fetch('https://api.gemini.dev/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${geminiApiKey}`
-            },
-            body: JSON.stringify({ query })
-        });
-
-        console.log('Gemini API Response:', response);
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Gemini API Error:', errorData);
-            throw new Error(`Gemini API Error: ${errorData.message}`);
-        }
-
-        const data = await response.json();
-        displayChatMessage('Bot', data.message || 'I did not understand that.');
-    } catch (error) {
-        console.error('Gemini API Fetch Error:', error);
-        displayChatMessage('Bot', 'Sorry, I couldn\'t fetch a response from the Gemini API.');
-    }
-}
-
-// Utility function to extract city name from the query
-function extractCityName(query) {
-    const words = query.split(' ');
-    return words[words.length - 1];  // Assume the last word is the city name
-}
-
-// Function to display chat messages
-function displayChatMessage(sender, message) {
-    const chatContainer = document.getElementById('chatContainer');
-    const messageElem = document.createElement('div');
-
-    messageElem.classList.add(
-        'p-2', 'mb-2', 'rounded-lg',
-        sender === 'Bot' ? 'bg-blue-100' : 'bg-gray-100'
-    );
-
-    messageElem.textContent = `${sender}: ${message}`;
-    chatContainer.appendChild(messageElem);
-    chatContainer.scrollTop = chatContainer.scrollHeight;  // Auto-scroll to the latest message
-}
-
-// Event listener for sending chat messages
-document.getElementById('sendChat').addEventListener('click', () => {
-    const chatInput = document.getElementById('chatInput');
-    const query = chatInput.value.trim();
-
-    if (query) {
-        displayChatMessage('You', query);  // Display user input
-        handleChat(query);  // Handle the input
-        chatInput.value = '';  // Clear input field
-    }
-});
-
-// Allow sending message on Enter key press
-document.getElementById('chatInput').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        document.getElementById('sendChat').click();
-    }
-});
+})();
 
 
 
