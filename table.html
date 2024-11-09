@@ -6,6 +6,7 @@
     <title>Weather Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script type="importmap">
         {
           "imports": {
@@ -13,130 +14,160 @@
           }
         }
     </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .custom-shadow {
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.17);
+        }
+        .gradient-bg {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+        }
+        .hover-scale {
+            transition: transform 0.2s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
-<body>
-    <div class="bg-gradient-to-r from-blue-300 to-cyan-100 flex justify-center items-center">
+<body class="bg-gradient-to-br from-blue-400 via-purple-400 to-pink-300 min-h-screen">
+    <!-- Mobile Navigation (visible only on mobile) -->
+    <nav class="lg:hidden glass-effect sticky top-0 z-50 px-4 py-2">
+        <div class="flex items-center justify-between">
+            <img src="logo.png" class="h-14 w-auto hover:scale-125 transition-transform duration-300">
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="text-white font-semibold hover:text-purple-500 transform hover:scale-105 transition-all duration-300">Dashboard</a>
+                <a href="table.html" class="text-white font-semibold hover:text-purple-500 transform hover:scale-105 transition-all duration-300">Table</a>
+                <img src="dp.jpg" alt="Profile Picture" class="w-10 h-10 rounded-full">
+            </div>
+        </div>
+    </nav>
 
-        <div class="container mx-auto flex flex-col md:flex-row w-full h-full">
-            <!-- Side Menu -->
-            <aside class="w-full md:w-1/4 lg:w-1/5 bg-gray-800 text-white flex flex-col py-5 md:py-8 mb-5 rounded-lg p-6">
-                <div class="items-center mb-5">
-                    <img src="logo.png"> 
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Side Menu (hidden on mobile) -->
+            <aside class="hidden lg:block lg:w-1/5 glass-effect rounded-xl p-6 shadow-lg">
+                <div class="mb-8 text-center">
+                    <img src="logo.png" class="mx-auto max-w-[150px] hover:scale-105 transition-transform duration-300"> 
                 </div>
-                <nav class="space-y-2 md:space-y-5">
-                    <a href="index.html" class="block text-center bg-gray-700 hover:bg-gray-600 py-2 px-4 rounded">Dashboard</a>
-                    <a href="table.html" class="block text-center bg-gray-700 hover:bg-gray-600 py-2 px-4 rounded">Table</a>
+                <nav class="space-y-4">
+                    <a href="index.html" class="block text-center bg-white/30 hover:bg-white/40 transition-all duration-300 py-3 px-6 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1">Dashboard</a>
+                    <a href="table.html" class="block text-center bg-white/30 hover:bg-white/40 transition-all duration-300 py-3 px-6 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1">Table</a>
                 </nav>
             </aside>
 
             <!-- Main Content -->
-            <main class="flex-1 p-3 sm:p-5 space-y-5">
-
-                <!-- Input Group -->
-                <div class="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-3">
+            <main class="flex-1 space-y-6">
+                <!-- Search Bar -->
+                <div class="flex flex-row gap-4 justify-center items-center w-full">
                     <input type="text" id="cityInput" placeholder="Enter city name" 
-                        class="border-2 border-gray-300 p-2 rounded-lg text-lg w-full sm:w-2/3 md:w-1/2" />
-                    <button id="getWeather" class="bg-gray-800 text-white px-5 py-2 rounded-lg hover:bg-gray-600 w-full sm:w-auto">
+                           class="flex-1 px-6 py-3 rounded-full text-lg border-0 focus:ring-2 focus:ring-blue-400 shadow-lg outline-none transition-all duration-300" />
+                    <button id="getWeather" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-300 shadow-lg whitespace-nowrap">
                         Search
                     </button>
+                
+                    <!-- Profile Picture (visible only on desktop) -->
+                    <div class="hidden lg:block w-12 h-12 rounded-full overflow-hidden">
+                        <img src="dp.jpg" alt="Profile Picture" class="w-full h-full object-cover">
+                    </div>        
                 </div>
+                
 
-                <!-- Table and Chatbot Section (Side by Side) -->
-                <div class="flex flex-col md:flex-row gap-6">
+
+                <!-- Table and Chatbot Section -->
+                <div class="flex flex-col lg:flex-row gap-6">
                     <!-- Forecast Table Section -->
-                    <div class="flex-1 bg-white p-6 rounded-lg shadow-md h-[525px] overflow-y-auto">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold">5-Day Weather Forecast Table</h2>
-                            <!-- Sort Dropdown Button -->
+                    <div class="flex-1 glass-effect p-6 rounded-xl custom-shadow h-[525px] overflow-y-auto">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">5-Day Weather Forecast</h2>
                             <div class="relative">
-                            <button id="sortButton" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded inline-flex items-center">
-                                Sort
-                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            <!-- Dropdown Menu -->
-                            <div id="sortMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20">
-                                <a href="#" id="sortAsc" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sort Temp Asc</a>
-                                <a href="#" id="sortDesc" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sort Temp Desc</a>
-                                <a href="#" id="showRainyDays" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Show Rainy Days</a>
-                                <a href="#" id="showMaxTemp" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Show Max Temp Day</a>
-                            </div>
+                                <button id="sortButton" class="bg-white/30 hover:bg-white/50 transition-all duration-300 text-gray-800 px-5 py-2 rounded-lg inline-flex items-center font-medium">
+                                    Sort
+                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div id="sortMenu" class="hidden absolute right-0 mt-2 w-48 glass-effect rounded-xl custom-shadow z-20">
+                                    <a href="#" id="sortAsc" class="block px-4 py-3 text-gray-800 hover:bg-white/30 rounded-t-xl transition-colors">Low to High</a>
+                                    <a href="#" id="sortDesc" class="block px-4 py-3 text-gray-800 hover:bg-white/30 transition-colors">High to Low</a>
+                                    <a href="#" id="showRainyDays" class="block px-4 py-3 text-gray-800 hover:bg-white/30 transition-colors">Rainy Days</a>
+                                    <a href="#" id="showMaxTemp" class="block px-4 py-3 text-gray-800 hover:bg-white/30 transition-colors">Max Temp Day</a>
+                                    <a href="#" id="resetAll" class="block px-4 py-3 text-gray-800 hover:bg-white/30 rounded-b-xl transition-colors">Reset All</a>
+                                </div>
+                                
                             </div>
                         </div>
-                
+
                         <div class="overflow-x-auto">
-                            <table id="forecastTable" 
-                                class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                            <table id="forecastTable" class="min-w-full bg-white/50 rounded-xl custom-shadow">
                                 <thead>
-                                    <tr class="bg-gray-200 text-gray-800 uppercase text-sm leading-normal">
-                                        <th class="py-3 px-6 text-left">Date</th>
-                                        <th class="py-3 px-6 text-left">Temperature</th>
-                                        <th class="py-3 px-6 text-left">Condition</th>
+                                    <tr class="bg-white/30 text-gray-800 uppercase text-sm">
+                                        <th class="py-4 px-6 text-left rounded-tl-xl">Date</th>
+                                        <th class="py-4 px-6 text-left">Temperature</th>
+                                        <th class="py-4 px-6 text-left rounded-tr-xl">Condition</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tableBody" class="text-gray-600 text-sm font-light">
+                                <tbody id="tableBody" class="text-gray-700">
                                     <!-- Dynamic rows will be added here -->
                                 </tbody>
                             </table>
                         </div>
-                
-                        <div class="flex justify-center items-center mt-6">
-                            <button id="prevPage" 
-                                    class="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50" 
-                                    disabled>Previous</button>
-                            <div id="paginationContainer" class="flex space-x-2 mx-4">
+
+                        <div class="flex justify-center items-center mt-6 space-x-4">
+                            <button id="prevPage" class="bg-white/30 hover:bg-white/50 transition-all duration-300 text-gray-800 px-5 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium" disabled>Previous</button>
+                            <div id="paginationContainer" class="flex space-x-2">
                                 <!-- Pagination buttons will be added here -->
                             </div>
-                            <button id="nextPage" 
-                                    class="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50">Next</button>
+                            <button id="nextPage" class="bg-white/30 hover:bg-white/50 transition-all duration-300 text-gray-800 px-5 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium">Next</button>
                         </div>
                     </div>
-                
+
                     <!-- Chatbot Section -->
-                    <div class="flex-1 bg-white p-6 rounded-lg shadow-md min-h-[525px]">
-                        <h2 class="text-center text-xl font-bold mb-4">WeatherBot</h2>
-                        <div id="chatContainer" 
-                            class="h-[360px] bg-gray-200 p-4 rounded-lg mb-4 overflow-y-auto">
+                    <div class="flex-1 glass-effect p-6 rounded-xl custom-shadow">
+                        <h2 class="text-center text-xl font-bold mb-6 text-gray-800">WeatherBot</h2>
+                        <div id="chatContainer" class="h-[360px] bg-white/30 p-4 rounded-xl mb-4 overflow-y-auto custom-shadow">
                             <!-- Chat messages will be inserted here -->
                         </div>
                         <div class="flex">
                             <input id="chatInput" type="text" placeholder="Ask me anything..." 
-                                class="w-full p-3 border border-gray-300 rounded-l-lg focus:outline-none">
-                            <button id="sendChat" 
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-r-lg">Send</button>
+                                class="w-full p-3 border-0 rounded-l-xl focus:ring-2 focus:ring-white/50 focus:outline-none bg-white/50" />
+                            <button id="sendChat" class="bg-white/30 hover:bg-white/50 transition-all duration-300 text-gray-800 px-6 py-3 rounded-r-xl font-medium hover-scale">Send</button>
                         </div>
                     </div>
                 </div>
-                
             </main>
         </div>
+    </div>
 
-        <script src="script.js"></script>
-        <script>
-            // Dropdown functionality
-            const sortButton = document.getElementById("sortButton");
-            const sortMenu = document.getElementById("sortMenu");
-
-            sortButton.addEventListener("click", function () {
-                sortMenu.classList.toggle("hidden");
-            });
-
-            document.addEventListener("click", function (e) {
-                if (!sortButton.contains(e.target) && !sortMenu.contains(e.target)) {
-                    sortMenu.classList.add("hidden");
-                }
-            });
-        </script>
-        
-        
-        
-    </div>  
     <!-- Footer -->
-    <footer class="bg-gray-800 py-5 mb-1">
-      <div class="container mx-auto text-center text-sm text-gray-400">
-          © 2024 TEMPORA | Designed by Haider
-      </div>
+    <footer class="glass-effect mt-8 py-4">
+        <div class="container mx-auto text-center text-white">
+            <p class="text-sm">© 2024 TEMPORA 🌤 | Designed by Adeel</p>
+        </div>
     </footer>
+
+    <script src="tableScript.js"></script>
+    <script>
+        const sortButton = document.getElementById("sortButton");
+        const sortMenu = document.getElementById("sortMenu");
+
+        sortButton.addEventListener("click", function () {
+            sortMenu.classList.toggle("hidden");
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!sortButton.contains(e.target) && !sortMenu.contains(e.target)) {
+                sortMenu.classList.add("hidden");
+            }
+        });
+    </script>
 </body>
 </html>
