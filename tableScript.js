@@ -1,5 +1,5 @@
 const apiKey = '17a4bb57e66204e9bd888ddc55cc4d07';
-const geminiApiKey = 'AIzaSyDVHev8CvcbYBEyNHgVERDRRtq8Ia9LrJI'; // Replace with your Gemini API Key
+const geminiApiKey = 'AIzaSyB4fgsvUnVFxjdNiWa6Uyf9ZhkyE-mfwFY'; // Replace with your Gemini API Key
 
 
 // Function to get user's geolocation 
